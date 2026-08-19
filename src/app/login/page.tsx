@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
 import LoginForm from './LoginForm';
@@ -17,7 +18,9 @@ export default function LoginPage() {
         </div>
 
         <div className="card p-6">
-          <LoginForm />
+          <Suspense fallback={<p className="text-sm text-center">Loading…</p>}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         <p className="mt-6 text-center text-xs text-bmmu-black/50 dark:text-bmmu-cream/50">
