@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 
+export const dynamic = 'force-dynamic';
+
 const display = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
