@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 
@@ -16,7 +16,19 @@ const body = Inter({
   variable: '--font-body'
 });
 
-export const metadata: Metadata = { title: 'BMMU Attendance Archive', description: 'Digital attendance record archive for Bilal Muslim Mission Uganda', manifest: '/manifest.json', icons: { icon: ['/icon-192.png', '/icon-512.png'], apple: '/apple-touch-icon.png' } }; Also add this line right after: export const metadata export const viewport = { themeColor: '#1C8A54' };
+export const metadata: Metadata = {
+  title: 'BMMU Attendance Archive',
+  description: 'Digital attendance record archive for Bilal Muslim Mission Uganda',
+  manifest: '/manifest.json',
+  icons: {
+    icon: ['/icon-192.png', '/icon-512.png'],
+    apple: '/apple-touch-icon.png'
+  }
+};
+
+export const viewport: Viewport = {
+  themeColor: '#1C8A54'
+};
 
 // Inline script so the correct theme applies before first paint (no flash).
 const themeInitScript = `
