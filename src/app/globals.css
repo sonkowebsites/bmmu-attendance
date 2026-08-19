@@ -1,3 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1, h2, h3, h4 {
+    @apply font-display;
+    letter-spacing: 0.01em;
+  }
+
+  ::selection {
+    @apply bg-bmmu-gold/40;
+  }
+
+  *:focus-visible {
+    outline: 2px solid theme('colors.bmmu.gold');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-bmmu-green px-5 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-bmmu-green-dark disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-bmmu-black/15 dark:border-bmmu-cream/20 px-5 py-2.5 font-semibold transition-colors hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10;
+  }
+
+  .card {
+    @apply rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-white/80 dark:bg-white/5 backdrop-blur-sm shadow-sm;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-bmmu-black/15 dark:border-bmmu-cream/20 bg-white dark:bg-white/5 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-bmmu-green;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-bmmu-black/70 dark:text-bmmu-cream/70;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-bmmu-green dark:text-bmmu-gold;
+  }
+}
+
+/* Subtle minaret/dome silhouette used as a quiet backdrop, echoing the BMMU crest */
 .dome-backdrop {
   position: absolute;
   inset: 0;
