@@ -1,0 +1,9 @@
+<svg width="420" height="420" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <path d="M60 420V180c0-38 26-64 60-64s60 26 60 64v240" stroke="currentColor" stroke-width="10" />
+  <path d="M60 180a60 60 0 0 1 120 0" stroke="currentColor" stroke-width="10" />
+  <circle cx="120" cy="60" r="10" stroke="currentColor" stroke-width="10" />
+  <path d="M230 420V240c0-30 20-50 46-50s46 20 46 50v180" stroke="currentColor" stroke-width="10" />
+  <path d="M230 240a46 46 0 0 1 92 0" stroke="currentColor" stroke-width="10" />
+  <circle cx="276" cy="150" r="8" stroke="currentColor" stroke-width="8" />
+  <path d="M40 400c60-40 120-60 200-60s130 20 150 40" stroke="currentColor" stroke-width="8" />
+</svg>

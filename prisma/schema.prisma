@@ -1,0 +1,99 @@
+// Prisma schema for the BMMU Attendance Archive
+// Database: Neon (serverless Postgres) - see README for setup
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  username     String   @unique
+  email        String?  @unique
+  passwordHash String
+  role         Role     @default(STAFF)
+  // Comma-free list of centres this staff member may submit records for.
+  // Empty array (for ADMIN or unrestricted STAFF) means "all centres".
+  centres      String[] @default([])
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdById  String?
+  createdBy    User?    @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers User[]   @relation("UserCreatedBy")
+
+  records   AttendanceRecord[]
+  auditLogs AuditLog[]
+}
+
+enum RecordStatus {
+  SUBMITTED
+  VERIFIED
+  FLAGGED
+}
+
+model AttendanceRecord {
+  id               String       @id @default(cuid())
+  programmeName    String
+  centre           String
+  activityType     String
+  eventDate        DateTime
+  sheikhName       String?
+  facilitatorName  String?
+  numberOfAttendees Int?
+  notes            String?
+
+  // Google Drive storage for the scanned/photographed attendance sheet
+  driveFileId      String?
+  driveViewLink    String?
+  driveFolderPath  String?
+  imageMimeType    String?
+
+  status           RecordStatus @default(SUBMITTED)
+
+  submittedById    String
+  submittedBy      User         @relation(fields: [submittedById], references: [id])
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@index([centre])
+  @@index([eventDate])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String   // e.g. "RECORD_CREATED", "RECORD_UPDATED", "USER_CREATED", "LOGIN_SUCCESS"
+  entityType String   // "AttendanceRecord" | "User" | "Auth"
+  entityId   String?
+  details    String?  // human readable summary of what changed
+
+  device     String?  // parsed device/browser string
+  userAgent  String?  // raw user-agent header
+  ipAddress  String?
+
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+
+  recordId   String?
+  record     AttendanceRecord? @relation(fields: [recordId], references: [id])
+
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+}
