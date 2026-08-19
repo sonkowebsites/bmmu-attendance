@@ -5,12 +5,14 @@ import LoginForm from './LoginForm';
 
 export default function LoginPage() {
   return (
-    <div className="dome-backdrop relative flex min-h-screen items-center justify-center px-4">
-      <div className="absolute right-4 top-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <div className="dome-backdrop" aria-hidden="true" />
+
+      <div className="absolute right-4 top-4 z-10">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo size={64} showText={false} />
           <h1 className="mt-4 font-display text-2xl font-semibold">BMMU Attendance Archive</h1>
