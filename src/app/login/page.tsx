@@ -12,10 +12,10 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm animate-rise">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo size={64} showText={false} />
-          <h1 className="mt-4 font-display text-2xl font-semibold">BMMU Attendance Archive</h1>
+          <h1 className="mt-4 font-display text-2xl font-bold tracking-tight">BMMU Attendance Archive</h1>
           <p className="eyebrow mt-1">Bilal Muslim Mission Uganda</p>
         </div>
 

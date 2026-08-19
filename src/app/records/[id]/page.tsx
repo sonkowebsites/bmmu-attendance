@@ -23,11 +23,11 @@ export default async function RecordDetailPage({ params }: { params: { id: strin
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Navbar />
-      <main className="mx-auto max-w-4xl px-5 py-8">
+      <main className="mx-auto max-w-4xl px-5 py-8 animate-fade-in">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="eyebrow">{record.activityType}</p>
-            <h1 className="mt-1 text-3xl font-semibold">{record.programmeName}</h1>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">{record.programmeName}</h1>
             <p className="mt-1 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
               {record.centre} · {new Date(record.eventDate).toLocaleDateString('en-GB', { dateStyle: 'long' })}
             </p>
@@ -57,7 +57,7 @@ export default async function RecordDetailPage({ params }: { params: { id: strin
               <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Sheikh / officiant</dt><dd>{record.sheikhName || '—'}</dd></div>
               <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Recorded by</dt><dd>{record.facilitatorName || '—'}</dd></div>
               <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Attendees</dt><dd>{record.numberOfAttendees ?? '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Submitted by</dt><dd>{record.submittedBy.name}</dd></div>
+              <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Submitted by</dt><dd>{record.submittedBy?.name ?? record.submittedByName}</dd></div>
               <div className="flex justify-between"><dt className="text-bmmu-black/60 dark:text-bmmu-cream/60">Submitted on</dt><dd>{new Date(record.createdAt).toLocaleString('en-GB')}</dd></div>
             </dl>
             {record.notes && (

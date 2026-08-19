@@ -12,11 +12,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "^7.9.1",
     "@prisma/client": "^5.20.0",
     "bcryptjs": "^2.4.3",
-    "bufferutil": "^4.1.0",
     "google-auth-library": "^9.14.1",
     "googleapis": "^144.0.0",
     "jose": "^5.9.3",
@@ -25,7 +22,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ua-parser-js": "^1.0.39",
-    "ws": "^8.21.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -1,17 +1,23 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
-const CENTRES = ['Old Kampala (HQ)', 'Jinja', 'Nakalanga', 'Tirinyi', 'Nwanzu / Iganga', 'Kibundaire'];
+import { useEffect, useState } from 'react';
 
 export default function NewUserForm() {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', username: '', email: '', password: '', role: 'STAFF' });
   const [centres, setCentres] = useState<string[]>([]);
+  const [availableCentres, setAvailableCentres] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/centres')
+      .then((res) => res.json())
+      .then((data) => setAvailableCentres((data.centres ?? []).map((c: { name: string }) => c.name)))
+      .catch(() => setAvailableCentres([]));
+  }, []);
 
   function toggleCentre(c: string) {
     setCentres((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
@@ -72,12 +78,12 @@ export default function NewUserForm() {
       <div>
         <label className="label">Restrict to centres (leave blank for all centres)</label>
         <div className="flex flex-wrap gap-2">
-          {CENTRES.map((c) => (
+          {availableCentres.map((c) => (
             <button
               type="button"
               key={c}
               onClick={() => toggleCentre(c)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150 hover:scale-105 active:scale-95 ${
                 centres.includes(c)
                   ? 'border-bmmu-green bg-bmmu-green text-white'
                   : 'border-bmmu-black/15 dark:border-bmmu-cream/20'
@@ -86,6 +92,11 @@ export default function NewUserForm() {
               {c}
             </button>
           ))}
+          {availableCentres.length === 0 && (
+            <p className="text-xs text-bmmu-black/50 dark:text-bmmu-cream/50">
+              No centres set up yet — add some on the Centres page first.
+            </p>
+          )}
         </div>
       </div>
 

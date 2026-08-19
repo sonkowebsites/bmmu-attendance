@@ -77,7 +77,8 @@ export async function POST(request: Request) {
       numberOfAttendees: numberOfAttendeesRaw ? Number(numberOfAttendeesRaw) : null,
       notes,
       imageMimeType: image.type,
-      submittedById: session.userId
+      submittedById: session.userId,
+      submittedByName: session.name
     }
   });
 

@@ -4,8 +4,8 @@
 
 @layer base {
   h1, h2, h3, h4 {
-    @apply font-display;
-    letter-spacing: 0.01em;
+    @apply font-display font-bold;
+    letter-spacing: -0.02em;
   }
 
   ::selection {
@@ -16,23 +16,31 @@
     outline: 2px solid theme('colors.bmmu.gold');
     outline-offset: 2px;
   }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-bmmu-green px-5 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-bmmu-green-dark disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-bmmu-green px-5 py-2.5 font-semibold text-white shadow-sm transition-all duration-200 ease-out hover:bg-bmmu-green-dark hover:scale-[1.03] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-bmmu-black/15 dark:border-bmmu-cream/20 px-5 py-2.5 font-semibold transition-colors hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-bmmu-black/15 dark:border-bmmu-cream/20 px-5 py-2.5 font-semibold transition-all duration-200 ease-out hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.03] active:scale-[0.97];
   }
 
   .card {
-    @apply rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-white/80 dark:bg-white/5 backdrop-blur-sm shadow-sm;
+    @apply rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow-sm transition-shadow duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md hover:border-bmmu-green/30 transition-all duration-200;
   }
 
   .input {
-    @apply w-full rounded-xl border border-bmmu-black/15 dark:border-bmmu-cream/20 bg-white dark:bg-white/5 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-bmmu-green;
+    @apply w-full rounded-xl border border-bmmu-black/15 dark:border-bmmu-cream/20 bg-white/80 dark:bg-white/5 backdrop-blur-sm px-3.5 py-2.5 text-sm outline-none transition-all duration-200 focus:border-bmmu-green focus:ring-2 focus:ring-bmmu-green/15;
   }
 
   .label {
@@ -59,4 +67,39 @@
 
 .dark .dome-backdrop {
   opacity: 0.1;
+}
+
+/* ---- Motion ---- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-rise {
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+.stagger > * {
+  animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-fade-in, .stagger > * {
+    animation: none;
+  }
 }

@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Inter } from 'next/font/google';
+import { Archivo, Inter } from 'next/font/google';
 import './globals.css';
 
 export const dynamic = 'force-dynamic';
 
-const display = Cormorant_Garamond({
+// Archivo is a bold, geometric grotesque - the closest widely-available
+// open font to the tight, confident headline style Netflix uses.
+const display = Archivo({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['700', '800'],
   variable: '--font-display'
 });
 
@@ -47,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="font-body bg-bmmu-cream text-bmmu-black dark:bg-bmmu-green-deep dark:text-bmmu-cream transition-colors duration-200 min-h-screen">
+      <body className="font-body bg-bmmu-cream text-bmmu-black dark:bg-bmmu-green-deep dark:text-bmmu-cream transition-colors duration-300 min-h-screen">
         {children}
       </body>
     </html>

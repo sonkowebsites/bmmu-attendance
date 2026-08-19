@@ -11,7 +11,7 @@ export default function CameraCapture({ onFileReady }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const [mode, setMode] = useState<'idle' | 'camera'>('idle');
+  const [mode, setMode] = useState<'idle' | 'starting' | 'camera'>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,17 +22,27 @@ export default function CameraCapture({ onFileReady }: Props) {
 
   async function startCamera() {
     setError(null);
+    setMode('starting');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
       });
       streamRef.current = stream;
+
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        // Some mobile browsers need an explicit play() call once metadata is ready,
+        // and won't render frames (blank screen) until this resolves.
+        await new Promise<void>((resolve) => {
+          video.onloadedmetadata = () => resolve();
+        });
+        await video.play();
+      }
       setMode('camera');
-      // Wait a tick for the <video> element to mount
-      setTimeout(() => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      }, 0);
     } catch (err) {
+      setMode('idle');
       setError('Could not access the camera. Check browser permissions, or upload a file instead.');
     }
   }
@@ -46,7 +56,7 @@ export default function CameraCapture({ onFileReady }: Props) {
   function capturePhoto() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || !video.videoWidth) return;
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -82,7 +92,7 @@ export default function CameraCapture({ onFileReady }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-fade-in">
       {!previewUrl && mode === 'idle' && (
         <div className="grid gap-3 sm:grid-cols-2">
           <button type="button" onClick={startCamera} className="btn-primary">
@@ -103,11 +113,23 @@ export default function CameraCapture({ onFileReady }: Props) {
         </div>
       )}
 
+      {mode === 'starting' && (
+        <div className="flex aspect-video w-full items-center justify-center rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black/5 dark:bg-white/5 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
+          Starting camera…
+        </div>
+      )}
+
       {mode === 'camera' && (
         <div className="space-y-3">
-          <div className="overflow-hidden rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video ref={videoRef} autoPlay playsInline className="max-h-[420px] w-full object-contain" />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={capturePhoto} className="btn-primary">
@@ -121,7 +143,7 @@ export default function CameraCapture({ onFileReady }: Props) {
       )}
 
       {previewUrl && (
-        <div className="space-y-3">
+        <div className="space-y-3 animate-rise">
           <div className="overflow-hidden rounded-2xl border border-bmmu-black/10 dark:border-bmmu-cream/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewUrl} alt="Attendance sheet preview" className="max-h-[420px] w-full object-contain bg-black/5" />

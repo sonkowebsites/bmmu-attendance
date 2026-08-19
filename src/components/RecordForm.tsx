@@ -4,8 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CameraCapture from './CameraCapture';
 
-const CENTRES = ['Old Kampala (HQ)', 'Jinja', 'Nakalanga', 'Tirinyi', 'Nwanzu / Iganga', 'Kibundaire', 'Other'];
-
 const ACTIVITY_TYPES = [
   'Sheikh Attendance Verification',
   'Majlis / Religious Gathering',
@@ -17,13 +15,11 @@ const ACTIVITY_TYPES = [
   'Other'
 ];
 
-export default function RecordForm({ allowedCentres }: { allowedCentres: string[] }) {
+export default function RecordForm({ centreOptions }: { centreOptions: string[] }) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const centreOptions = allowedCentres.length > 0 ? allowedCentres : CENTRES;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,7 +47,7 @@ export default function RecordForm({ allowedCentres }: { allowedCentres: string[
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8 stagger">
       <section className="card p-5">
         <h2 className="eyebrow mb-4">1. Attendance sheet</h2>
         <CameraCapture onFileReady={setFile} />

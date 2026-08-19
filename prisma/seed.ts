@@ -3,14 +3,25 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+const DEFAULT_CENTRES = ['BMMU HQ', 'Jinja', 'Nakalanga', 'Tirinyi', 'Nwanzu / Iganga', 'Kibundaire'];
+
 async function main() {
   const username = process.env.SEED_ADMIN_USERNAME || 'admin';
   const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
   const name = process.env.SEED_ADMIN_NAME || 'BMMU Administrator';
 
+  for (const centreName of DEFAULT_CENTRES) {
+    await prisma.centre.upsert({
+      where: { name: centreName },
+      update: {},
+      create: { name: centreName }
+    });
+  }
+  console.log(`Ensured ${DEFAULT_CENTRES.length} default centres exist.`);
+
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
-    console.log(`Admin account "${username}" already exists - nothing to do.`);
+    console.log(`Admin account "${username}" already exists - nothing more to do.`);
     return;
   }
 

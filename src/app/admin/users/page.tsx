@@ -10,11 +10,14 @@ export default async function AdminUsersPage() {
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Navbar />
-      <main className="mx-auto max-w-5xl px-5 py-8">
-        <h1 className="mb-1 text-3xl font-semibold">Staff accounts</h1>
+      <main className="mx-auto max-w-5xl px-5 py-8 animate-fade-in">
+        <h1 className="mb-1 text-3xl font-bold tracking-tight">Staff accounts</h1>
         <p className="mb-6 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
           You control every account here — staff cannot sign themselves up. Create an account, assign a role, and
-          optionally restrict it to specific centres.
+          optionally restrict it to specific centres. Need to add a new centre first?{' '}
+          <a href="/admin/centres" className="font-semibold text-bmmu-green underline dark:text-bmmu-gold">
+            Manage centres →
+          </a>
         </p>
 
         <section className="card mb-8 p-5">

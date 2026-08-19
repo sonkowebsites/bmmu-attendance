@@ -53,3 +53,34 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const session = await getSession();
+  if (!session || session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (params.id === session.userId) {
+    return NextResponse.json({ error: 'You cannot delete your own account while signed in as it.' }, { status: 400 });
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: params.id } });
+  if (!target) {
+    return NextResponse.json({ error: 'Account not found.' }, { status: 404 });
+  }
+
+  // Records this person submitted keep a permanent name snapshot
+  // (submittedByName), so deleting the account never erases archive history.
+  await prisma.user.delete({ where: { id: params.id } });
+
+  await logAudit({
+    action: 'USER_DELETED',
+    entityType: 'User',
+    entityId: params.id,
+    userId: session.userId,
+    details: `Deleted account "${target.username}"`,
+    request
+  });
+
+  return NextResponse.json({ ok: true });
+}

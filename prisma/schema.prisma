@@ -37,6 +37,13 @@ model User {
   auditLogs AuditLog[]
 }
 
+model Centre {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 enum RecordStatus {
   SUBMITTED
   VERIFIED
@@ -62,8 +69,12 @@ model AttendanceRecord {
 
   status           RecordStatus @default(SUBMITTED)
 
-  submittedById    String
-  submittedBy      User         @relation(fields: [submittedById], references: [id])
+  // A snapshot of the submitter's name at the time of submission, kept even
+  // if that staff account is later deleted, so history is never lost.
+  submittedByName  String       @default("")
+
+  submittedById    String?
+  submittedBy      User?        @relation(fields: [submittedById], references: [id], onDelete: SetNull)
 
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
@@ -86,10 +97,10 @@ model AuditLog {
   ipAddress  String?
 
   userId     String?
-  user       User?    @relation(fields: [userId], references: [id])
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   recordId   String?
-  record     AttendanceRecord? @relation(fields: [recordId], references: [id])
+  record     AttendanceRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
 
   createdAt  DateTime @default(now())
 

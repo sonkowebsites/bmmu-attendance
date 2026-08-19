@@ -29,9 +29,9 @@ export default async function RecordsPage({ searchParams }: { searchParams: { q?
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Navbar />
-      <main className="mx-auto max-w-6xl px-5 py-8">
+      <main className="mx-auto max-w-6xl px-5 py-8 animate-fade-in">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold">Attendance records</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Attendance records</h1>
           <Link href="/records/new" className="btn-primary">+ New record</Link>
         </div>
 
@@ -65,7 +65,7 @@ export default async function RecordsPage({ searchParams }: { searchParams: { q?
                   </td>
                   <td className="px-4 py-3">{r.centre}</td>
                   <td className="px-4 py-3">{new Date(r.eventDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })}</td>
-                  <td className="px-4 py-3">{r.submittedBy.name}</td>
+                  <td className="px-4 py-3">{r.submittedBy?.name ?? r.submittedByName}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-bmmu-green/10 px-2.5 py-1 text-xs font-semibold text-bmmu-green dark:text-bmmu-gold">
                       {r.status}

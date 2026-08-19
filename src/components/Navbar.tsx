@@ -9,28 +9,31 @@ export default async function Navbar() {
   if (!session) return null;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-bmmu-black/10 dark:border-bmmu-cream/10 bg-bmmu-cream/90 dark:bg-bmmu-green-deep/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-20 border-b border-bmmu-black/10 dark:border-bmmu-cream/10 bg-bmmu-cream/70 dark:bg-bmmu-green-deep/70 backdrop-blur-xl transition-colors duration-300">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
         <Link href="/dashboard">
           <Logo size={38} />
         </Link>
 
-        <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
-          <Link href="/dashboard" className="rounded-full px-3 py-1.5 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10">
+        <nav className="hidden items-center gap-1 text-sm font-semibold md:flex">
+          <Link href="/dashboard" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
             Dashboard
           </Link>
-          <Link href="/records" className="rounded-full px-3 py-1.5 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10">
+          <Link href="/records" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
             Records
           </Link>
-          <Link href="/records/new" className="rounded-full px-3 py-1.5 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10">
+          <Link href="/records/new" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
             New Record
           </Link>
           {session.role === 'ADMIN' && (
             <>
-              <Link href="/admin/users" className="rounded-full px-3 py-1.5 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10">
+              <Link href="/admin/users" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
                 Staff Accounts
               </Link>
-              <Link href="/admin/logs" className="rounded-full px-3 py-1.5 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10">
+              <Link href="/admin/centres" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
+                Centres
+              </Link>
+              <Link href="/admin/logs" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
                 Activity Log
               </Link>
             </>

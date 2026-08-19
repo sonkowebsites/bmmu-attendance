@@ -31,6 +31,22 @@ export default function UserRow({ user }: { user: U }) {
     window.alert('Password reset. Share the new password with the staff member securely.');
   }
 
+  async function deleteAccount() {
+    const confirmed = window.confirm(
+      `Permanently delete "${user.username}"? Any records they submitted stay in the archive, but this login will stop existing. This can't be undone.`
+    );
+    if (!confirmed) return;
+    setLoading(true);
+    const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      window.alert(data.error ?? 'Could not delete this account.');
+      setLoading(false);
+      return;
+    }
+    router.refresh();
+  }
+
   return (
     <tr className="border-b border-bmmu-black/5 dark:border-bmmu-cream/5">
       <td className="px-4 py-3 font-medium">{user.name}</td>
@@ -64,6 +80,13 @@ export default function UserRow({ user }: { user: U }) {
           className="btn-secondary px-3 py-1 text-xs"
         >
           {user.active ? 'Deactivate' : 'Reactivate'}
+        </button>
+        <button
+          disabled={loading}
+          onClick={deleteAccount}
+          className="rounded-full border border-red-500/30 px-3 py-1 text-xs font-semibold text-red-600 transition-all duration-150 hover:bg-red-500/10 hover:scale-105 active:scale-95"
+        >
+          Delete
         </button>
       </td>
     </tr>
