@@ -16,10 +16,7 @@ const body = Inter({
   variable: '--font-body'
 });
 
-export const metadata: Metadata = {
-  title: 'BMMU Attendance Archive',
-  description: 'Digital attendance record archive for Bilal Muslim Mission Uganda'
-};
+export const metadata: Metadata = { title: 'BMMU Attendance Archive', description: 'Digital attendance record archive for Bilal Muslim Mission Uganda', manifest: '/manifest.json', icons: { icon: ['/icon-192.png', '/icon-512.png'], apple: '/apple-touch-icon.png' } }; Also add this line right after: export const metadata export const viewport = { themeColor: '#1C8A54' };
 
 // Inline script so the correct theme applies before first paint (no flash).
 const themeInitScript = `
