@@ -14,6 +14,7 @@ export default async function RecordDetailPage({ params }: { params: { id: strin
     where: { id: params.id },
     include: {
       submittedBy: { select: { name: true, username: true } },
+      images: { orderBy: { order: 'asc' } },
       auditLogs: { orderBy: { createdAt: 'desc' }, include: { user: { select: { name: true, username: true } } } }
     }
   });
@@ -37,15 +38,36 @@ export default async function RecordDetailPage({ params }: { params: { id: strin
 
         <div className="grid gap-6 md:grid-cols-2">
           <section className="card overflow-hidden">
-            {record.driveViewLink ? (
-              <a href={record.driveViewLink} target="_blank" rel="noreferrer" className="block">
-                <div className="flex items-center justify-center bg-black/5 p-10 text-center text-sm dark:bg-white/5">
-                  Open scanned sheet in Google Drive ↗
-                </div>
-              </a>
+            {record.images.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2 p-3 stagger">
+                {record.images.map((img, i) =>
+                  img.driveViewLink ? (
+                    <a
+                      key={img.id}
+                      href={img.driveViewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex aspect-square items-center justify-center rounded-xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black/5 text-center text-xs transition-transform duration-150 hover:scale-[1.03] dark:bg-white/5"
+                    >
+                      Page {i + 1}
+                      <br />
+                      Open in Drive ↗
+                    </a>
+                  ) : (
+                    <div
+                      key={img.id}
+                      className="flex aspect-square items-center justify-center rounded-xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black/5 text-center text-xs text-bmmu-black/50 dark:bg-white/5 dark:text-bmmu-cream/50"
+                    >
+                      Page {i + 1}
+                      <br />
+                      Backing up…
+                    </div>
+                  )
+                )}
+              </div>
             ) : (
               <div className="p-5 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
-                This copy has not finished backing up to Google Drive yet. It's still safe in the database — check the
+                This record's images have not finished backing up to Google Drive yet. They're still safe — check the
                 activity log below, or ask your admin to confirm the Drive connection.
               </div>
             )}

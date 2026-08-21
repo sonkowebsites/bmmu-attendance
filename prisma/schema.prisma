@@ -61,12 +61,6 @@ model AttendanceRecord {
   numberOfAttendees Int?
   notes            String?
 
-  // Google Drive storage for the scanned/photographed attendance sheet
-  driveFileId      String?
-  driveViewLink    String?
-  driveFolderPath  String?
-  imageMimeType    String?
-
   status           RecordStatus @default(SUBMITTED)
 
   // A snapshot of the submitter's name at the time of submission, kept even
@@ -79,10 +73,30 @@ model AttendanceRecord {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
+  images    RecordImage[]
   auditLogs AuditLog[]
 
   @@index([centre])
   @@index([eventDate])
+}
+
+// One attendance record can have several scanned/photographed pages -
+// e.g. a long sheet photographed in two shots, or several sheets from one
+// session uploaded together.
+model RecordImage {
+  id              String   @id @default(cuid())
+  recordId        String
+  record          AttendanceRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  driveFileId     String?
+  driveViewLink   String?
+  driveFolderPath String?
+  mimeType        String?
+  order           Int      @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([recordId])
 }
 
 model AuditLog {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
-import { uploadAttendanceImage } from '@/lib/drive';
+import { uploadAttendanceImages } from '@/lib/drive';
 
 export async function GET(request: Request) {
   const session = await getSession();
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         : {})
     },
     orderBy: { eventDate: 'desc' },
-    include: { submittedBy: { select: { name: true } } },
+    include: { submittedBy: { select: { name: true } }, images: true },
     take: 200
   });
 
@@ -38,7 +38,10 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const formData = await request.formData();
-  const image = formData.get('image');
+  // Support both the "images" (multiple) field and a legacy single "image" field.
+  const images = [...formData.getAll('images'), ...formData.getAll('image')].filter(
+    (f): f is File => f instanceof File && f.size > 0
+  );
 
   const programmeName = String(formData.get('programmeName') ?? '').trim();
   const centre = String(formData.get('centre') ?? '').trim();
@@ -53,8 +56,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please fill in all required programme details.' }, { status: 400 });
   }
 
-  if (!(image instanceof File) || image.size === 0) {
-    return NextResponse.json({ error: 'Please attach a photo or scanned copy of the attendance sheet.' }, { status: 400 });
+  if (images.length === 0) {
+    return NextResponse.json({ error: 'Please attach at least one photo or scanned copy of the attendance sheet.' }, { status: 400 });
+  }
+  if (images.length > 12) {
+    return NextResponse.json({ error: 'Please attach 12 images or fewer per record.' }, { status: 400 });
   }
 
   // Restrict staff to their assigned centres, if any are set.
@@ -63,8 +69,6 @@ export async function POST(request: Request) {
   }
 
   const eventDate = new Date(eventDateRaw);
-  const arrayBuffer = await image.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
 
   const record = await prisma.attendanceRecord.create({
     data: {
@@ -76,27 +80,34 @@ export async function POST(request: Request) {
       facilitatorName,
       numberOfAttendees: numberOfAttendeesRaw ? Number(numberOfAttendeesRaw) : null,
       notes,
-      imageMimeType: image.type,
       submittedById: session.userId,
       submittedByName: session.name
     }
   });
 
-  // Upload to Google Drive. If Drive isn't configured yet, keep the record
-  // (so nothing is lost) and surface a clear note instead of failing hard.
+  // Upload every page to Google Drive. If Drive isn't configured yet, keep
+  // the record (so nothing is lost) and surface a clear note instead of
+  // failing the whole submission.
   try {
-    const safeName = `${eventDate.toISOString().slice(0, 10)}_${activityType}_${record.id}`.replace(/\s+/g, '-');
-    const uploadResult = await uploadAttendanceImage({
-      buffer,
-      mimeType: image.type || 'image/jpeg',
-      fileName: safeName,
-      centre,
-      eventDate
-    });
+    const preparedFiles = await Promise.all(
+      images.map(async (image, index) => {
+        const buffer = Buffer.from(await image.arrayBuffer());
+        const safeName = `${eventDate.toISOString().slice(0, 10)}_${activityType}_${record.id}_${index + 1}`.replace(/\s+/g, '-');
+        return { buffer, mimeType: image.type || 'image/jpeg', fileName: safeName };
+      })
+    );
 
-    await prisma.attendanceRecord.update({
-      where: { id: record.id },
-      data: uploadResult
+    const uploadResults = await uploadAttendanceImages({ files: preparedFiles, centre, eventDate });
+
+    await prisma.recordImage.createMany({
+      data: uploadResults.map((r, index) => ({
+        recordId: record.id,
+        driveFileId: r.driveFileId,
+        driveViewLink: r.driveViewLink,
+        driveFolderPath: r.driveFolderPath,
+        mimeType: r.mimeType,
+        order: index
+      }))
     });
   } catch (err) {
     console.error('Google Drive upload failed', err);
@@ -117,7 +128,7 @@ export async function POST(request: Request) {
     entityId: record.id,
     recordId: record.id,
     userId: session.userId,
-    details: `${activityType} — ${programmeName} (${centre})`,
+    details: `${activityType} — ${programmeName} (${centre}) — ${images.length} image${images.length === 1 ? '' : 's'}`,
     request
   });
 

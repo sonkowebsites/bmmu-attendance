@@ -17,7 +17,7 @@ const ACTIVITY_TYPES = [
 
 export default function RecordForm({ centreOptions }: { centreOptions: string[] }) {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,13 +25,14 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
     e.preventDefault();
     setError(null);
 
-    if (!file) {
-      setError('Please capture a photo or upload the scanned attendance sheet before saving.');
+    if (files.length === 0) {
+      setError('Please capture a photo or upload at least one scanned attendance sheet before saving.');
       return;
     }
 
     const formData = new FormData(e.currentTarget);
-    formData.set('image', file);
+    formData.delete('images');
+    files.forEach((file) => formData.append('images', file));
 
     setSubmitting(true);
     try {
@@ -49,8 +50,8 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 stagger">
       <section className="card p-5">
-        <h2 className="eyebrow mb-4">1. Attendance sheet</h2>
-        <CameraCapture onFileReady={setFile} />
+        <h2 className="eyebrow mb-4">1. Attendance sheet(s)</h2>
+        <CameraCapture onFilesChange={setFiles} />
       </section>
 
       <section className="card space-y-5 p-5">

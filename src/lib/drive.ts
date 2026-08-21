@@ -54,16 +54,12 @@ async function findOrCreateFolder(drive: ReturnType<typeof google.drive>, name: 
   return created.data.id;
 }
 
-export async function uploadAttendanceImage({
-  buffer,
-  mimeType,
-  fileName,
+export async function uploadAttendanceImages({
+  files,
   centre,
   eventDate
 }: {
-  buffer: Buffer;
-  mimeType: string;
-  fileName: string;
+  files: { buffer: Buffer; mimeType: string; fileName: string }[];
   centre: string;
   eventDate: Date;
 }) {
@@ -78,21 +74,25 @@ export async function uploadAttendanceImage({
   const year = String(eventDate.getFullYear());
   const centreFolderId = await findOrCreateFolder(drive, centre || 'Unspecified Centre', rootFolderId);
   const yearFolderId = await findOrCreateFolder(drive, year, centreFolderId);
+  const driveFolderPath = `${centre || 'Unspecified Centre'}/${year}`;
 
-  const media = { mimeType, body: Readable.from(buffer) };
+  const results: { driveFileId: string | null; driveViewLink: string | null; driveFolderPath: string; mimeType: string }[] = [];
 
-  const file = await drive.files.create({
-    requestBody: {
-      name: fileName,
-      parents: [yearFolderId]
-    },
-    media,
-    fields: 'id, webViewLink, name'
-  });
+  for (const file of files) {
+    const media = { mimeType: file.mimeType, body: Readable.from(file.buffer) };
+    const uploaded = await drive.files.create({
+      requestBody: { name: file.fileName, parents: [yearFolderId] },
+      media,
+      fields: 'id, webViewLink, name'
+    });
 
-  return {
-    driveFileId: file.data.id ?? null,
-    driveViewLink: file.data.webViewLink ?? null,
-    driveFolderPath: `${centre || 'Unspecified Centre'}/${year}`
-  };
+    results.push({
+      driveFileId: uploaded.data.id ?? null,
+      driveViewLink: uploaded.data.webViewLink ?? null,
+      driveFolderPath,
+      mimeType: file.mimeType
+    });
+  }
+
+  return results;
 }
