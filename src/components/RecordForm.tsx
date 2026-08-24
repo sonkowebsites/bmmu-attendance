@@ -19,6 +19,7 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -30,20 +31,57 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    formData.delete('images');
-    files.forEach((file) => formData.append('images', file));
+    const form = e.currentTarget;
+    const raw = new FormData(form);
+    const metadata = {
+      programmeName: String(raw.get('programmeName') ?? '').trim(),
+      centre: String(raw.get('centre') ?? '').trim(),
+      activityType: String(raw.get('activityType') ?? '').trim(),
+      eventDate: String(raw.get('eventDate') ?? ''),
+      sheikhName: String(raw.get('sheikhName') ?? '').trim(),
+      facilitatorName: String(raw.get('facilitatorName') ?? '').trim(),
+      numberOfAttendees: String(raw.get('numberOfAttendees') ?? ''),
+      notes: String(raw.get('notes') ?? '').trim()
+    };
 
     setSubmitting(true);
+    setProgress({ done: 0, total: files.length });
+
     try {
-      const res = await fetch('/api/records', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Something went wrong while saving the record.');
-      router.push(`/records/${data.id}`);
+      // 1) Create the record itself (fast - metadata only, no images yet).
+      const createRes = await fetch('/api/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metadata)
+      });
+      const created = await createRes.json();
+      if (!createRes.ok) throw new Error(created.error ?? 'Something went wrong while saving the record.');
+
+      // 2) Upload each image as its own small request - keeps every request
+      // well under the hosting platform's size limit, no matter how many
+      // photos were captured, and one failure doesn't lose the others.
+      let failures = 0;
+      for (let i = 0; i < files.length; i++) {
+        const imgForm = new FormData();
+        imgForm.append('image', files[i]);
+        imgForm.append('order', String(i));
+        const res = await fetch(`/api/records/${created.id}/images`, { method: 'POST', body: imgForm });
+        if (!res.ok) failures++;
+        setProgress({ done: i + 1, total: files.length });
+      }
+
+      if (failures > 0) {
+        setError(
+          `Saved, but ${failures} of ${files.length} image${files.length === 1 ? '' : 's'} failed to back up to Drive. Open the record to check, and re-add any missing pages if needed.`
+        );
+      }
+
+      router.push(`/records/${created.id}`);
       router.refresh();
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong.');
       setSubmitting(false);
+      setProgress(null);
     }
   }
 
@@ -113,7 +151,11 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <button type="submit" disabled={submitting} className="btn-primary w-full sm:w-auto">
-        {submitting ? 'Saving…' : 'Save attendance record'}
+        {submitting
+          ? progress
+            ? `Saving… (${progress.done}/${progress.total} images)`
+            : 'Saving…'
+          : 'Save attendance record'}
       </button>
     </form>
   );

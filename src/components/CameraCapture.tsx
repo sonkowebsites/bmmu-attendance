@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { compressImage } from '@/lib/image-compress';
 
 type Shot = { id: string; file: File; previewUrl: string };
 
@@ -17,6 +18,7 @@ export default function CameraCapture({ onFilesChange }: Props) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [shots, setShots] = useState<Shot[]>([]);
+  const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,8 +82,14 @@ export default function CameraCapture({ onFilesChange }: Props) {
     const canvas = canvasRef.current;
     if (!video || !canvas || !video.videoWidth) return;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Cap the capture itself at a sensible size - a phone camera's native
+    // resolution is far more than needed for a legible attendance sheet,
+    // and this keeps files small (faster upload, less Drive storage) from
+    // the moment the photo is taken.
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(video.videoWidth, video.videoHeight));
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -93,19 +101,27 @@ export default function CameraCapture({ onFilesChange }: Props) {
         addShots([file]);
       },
       'image/jpeg',
-      0.92
+      0.82
     );
   }
 
-  function addShots(files: File[]) {
+  async function addShots(files: File[]) {
+    setProcessing(true);
+    const room = Math.max(0, 20 - shots.length);
+    const toAdd = files.slice(0, room);
+    const compressed = await Promise.all(toAdd.map((f) => compressImage(f)));
     setShots((prev) => {
       const next = [
         ...prev,
-        ...files.map((file) => ({ id: `${Date.now()}-${Math.random()}`, file, previewUrl: URL.createObjectURL(file) }))
+        ...compressed.map((file) => ({ id: `${Date.now()}-${Math.random()}`, file, previewUrl: URL.createObjectURL(file) }))
       ];
       onFilesChange(next.map((s) => s.file));
       return next;
     });
+    setProcessing(false);
+    if (files.length > toAdd.length) {
+      setError('You can attach up to 20 images per record - the rest were not added.');
+    }
   }
 
   function removeShot(id: string) {
@@ -173,7 +189,7 @@ export default function CameraCapture({ onFilesChange }: Props) {
         </div>
       )}
 
-      {shots.length > 0 && (
+      {(shots.length > 0 || processing) && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 stagger">
           {shots.map((shot) => (
             <div key={shot.id} className="group relative aspect-square overflow-hidden rounded-xl border border-bmmu-black/10 dark:border-bmmu-cream/10">
@@ -189,6 +205,11 @@ export default function CameraCapture({ onFilesChange }: Props) {
               </button>
             </div>
           ))}
+          {processing && (
+            <div className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-bmmu-black/20 dark:border-bmmu-cream/20 text-xs text-bmmu-black/50 dark:text-bmmu-cream/50">
+              Processing…
+            </div>
+          )}
         </div>
       )}
 
