@@ -34,7 +34,7 @@ export default function NewUserForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, centres })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Something unexpected happened. Please try again.' }));
       if (!res.ok) throw new Error(data.error ?? 'Could not create the account.');
       setSuccess(`Account "${form.username}" created.`);
       setForm({ name: '', username: '', email: '', password: '', role: 'STAFF' });

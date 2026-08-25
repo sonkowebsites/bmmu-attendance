@@ -21,8 +21,8 @@ export default function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Sign in failed.');
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? 'Sign in failed.');
       router.push(searchParams.get('next') || '/dashboard');
       router.refresh();
     } catch (err: any) {

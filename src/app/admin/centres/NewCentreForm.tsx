@@ -19,7 +19,7 @@ export default function NewCentreForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Something unexpected happened. Please try again.' }));
       if (!res.ok) throw new Error(data.error ?? 'Could not add that centre.');
       setName('');
       router.refresh();

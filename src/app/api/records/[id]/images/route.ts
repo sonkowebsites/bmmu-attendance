@@ -4,6 +4,13 @@ import { getSession } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
 import { uploadAttendanceImages } from '@/lib/drive';
 
+// Google Drive calls (folder lookups + the upload itself) can occasionally
+// run past the platform's default 10s function timeout on a slow
+// connection - this raises the ceiling so a slow upload finishes instead of
+// getting cut off mid-response (which is what causes a client-side
+// "Unexpected end of JSON input" error).
+export const maxDuration = 60;
+
 // Handles ONE image per request, deliberately - this keeps every request
 // small (well under hosting platform request-size limits) no matter how
 // many photos a record ends up with, and one slow/failed image never

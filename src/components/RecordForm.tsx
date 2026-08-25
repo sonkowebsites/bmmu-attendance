@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CameraCapture from './CameraCapture';
+import { safeJson } from '@/lib/safe-json';
 
 const ACTIVITY_TYPES = [
   'Sheikh Attendance Verification',
@@ -54,19 +55,26 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(metadata)
       });
-      const created = await createRes.json();
-      if (!createRes.ok) throw new Error(created.error ?? 'Something went wrong while saving the record.');
+      const { ok: createOk, data: created } = await safeJson<{ id: string }>(createRes);
+      if (!createOk || !('id' in created)) {
+        throw new Error('error' in created ? created.error : 'Something went wrong while saving the record.');
+      }
 
       // 2) Upload each image as its own small request - keeps every request
       // well under the hosting platform's size limit, no matter how many
       // photos were captured, and one failure doesn't lose the others.
       let failures = 0;
       for (let i = 0; i < files.length; i++) {
-        const imgForm = new FormData();
-        imgForm.append('image', files[i]);
-        imgForm.append('order', String(i));
-        const res = await fetch(`/api/records/${created.id}/images`, { method: 'POST', body: imgForm });
-        if (!res.ok) failures++;
+        try {
+          const imgForm = new FormData();
+          imgForm.append('image', files[i]);
+          imgForm.append('order', String(i));
+          const res = await fetch(`/api/records/${created.id}/images`, { method: 'POST', body: imgForm });
+          if (!res.ok) failures++;
+        } catch {
+          // A network hiccup on one image shouldn't stop the rest from trying.
+          failures++;
+        }
         setProgress({ done: i + 1, total: files.length });
       }
 
