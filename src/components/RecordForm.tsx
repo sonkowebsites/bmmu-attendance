@@ -5,18 +5,13 @@ import { useState } from 'react';
 import CameraCapture from './CameraCapture';
 import { safeJson } from '@/lib/safe-json';
 
-const ACTIVITY_TYPES = [
-  'Sheikh Attendance Verification',
-  'Majlis / Religious Gathering',
-  'Shuyuk Seminar',
-  'Elder Members Assembly',
-  'Friday Prayers',
-  'Qurbani / Distribution',
-  'Sports Event',
-  'Other'
-];
-
-export default function RecordForm({ centreOptions }: { centreOptions: string[] }) {
+export default function RecordForm({
+  centreOptions,
+  activityTypeOptions
+}: {
+  centreOptions: string[];
+  activityTypeOptions: string[];
+}) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -123,7 +118,7 @@ export default function RecordForm({ centreOptions }: { centreOptions: string[] 
             <label className="label" htmlFor="activityType">Type of activity *</label>
             <select id="activityType" name="activityType" required className="input">
               <option value="">Select a type</option>
-              {ACTIVITY_TYPES.map((t) => (
+              {activityTypeOptions.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>

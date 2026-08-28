@@ -33,6 +33,9 @@ export default async function Navbar() {
               <Link href="/admin/centres" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
                 Centres
               </Link>
+              <Link href="/admin/activity-types" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
+                Activity Types
+              </Link>
               <Link href="/admin/logs" className="rounded-full px-3 py-1.5 transition-all duration-150 hover:bg-bmmu-black/5 dark:hover:bg-bmmu-cream/10 hover:scale-[1.04] active:scale-95">
                 Activity Log
               </Link>

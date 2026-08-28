@@ -3,7 +3,7 @@ import { prisma } from './db';
 
 type AuditInput = {
   action: string;
-  entityType: 'AttendanceRecord' | 'User' | 'Auth';
+  entityType: 'AttendanceRecord' | 'User' | 'Auth' | 'ActivityType';
   entityId?: string;
   recordId?: string;
   userId?: string | null;

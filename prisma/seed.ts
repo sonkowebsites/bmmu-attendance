@@ -5,6 +5,17 @@ const prisma = new PrismaClient();
 
 const DEFAULT_CENTRES = ['BMMU HQ', 'Jinja', 'Nakalanga', 'Tirinyi', 'Nwanzu / Iganga', 'Kibundaire'];
 
+const DEFAULT_ACTIVITY_TYPES = [
+  'Sheikh Attendance Verification',
+  'Majlis / Religious Gathering',
+  'Shuyuk Seminar',
+  'Elder Members Assembly',
+  'Friday Prayers',
+  'Qurbani / Distribution',
+  'Sports Event',
+  'Other'
+];
+
 async function main() {
   const username = process.env.SEED_ADMIN_USERNAME || 'admin';
   const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
@@ -18,6 +29,15 @@ async function main() {
     });
   }
   console.log(`Ensured ${DEFAULT_CENTRES.length} default centres exist.`);
+
+  for (const typeName of DEFAULT_ACTIVITY_TYPES) {
+    await prisma.activityType.upsert({
+      where: { name: typeName },
+      update: {},
+      create: { name: typeName }
+    });
+  }
+  console.log(`Ensured ${DEFAULT_ACTIVITY_TYPES.length} default activity types exist.`);
 
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {

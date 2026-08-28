@@ -18,6 +18,13 @@ export default async function NewRecordPage() {
   // If this staff account is restricted to specific centres, only offer those.
   const centreOptions = session.centres.length > 0 ? session.centres : allNames;
 
+  const activeActivityTypes = await prisma.activityType.findMany({
+    where: { active: true },
+    orderBy: { name: 'asc' },
+    select: { name: true }
+  });
+  const activityTypeOptions = activeActivityTypes.map((t) => t.name);
+
   return (
     <div className="min-h-screen pb-20 md:pb-0">
       <Navbar />
@@ -27,7 +34,7 @@ export default async function NewRecordPage() {
           Capture or upload the physical sheet, then fill in the programme details below. It's saved to the archive and
           backed up to Google Drive automatically.
         </p>
-        <RecordForm centreOptions={centreOptions} />
+        <RecordForm centreOptions={centreOptions} activityTypeOptions={activityTypeOptions} />
       </main>
       <MobileTabBar />
     </div>
