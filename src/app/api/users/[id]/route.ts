@@ -14,10 +14,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   const data: Record<string, unknown> = {};
   const changeSummary: string[] = [];
 
-  if (typeof body.name === 'string' && body.name.trim().length >= 2) {
-    data.name = body.name.trim();
-    changeSummary.push(`name changed to "${data.name}"`);
-  }
   if (typeof body.active === 'boolean') {
     data.active = body.active;
     changeSummary.push(body.active ? 'reactivated' : 'deactivated');

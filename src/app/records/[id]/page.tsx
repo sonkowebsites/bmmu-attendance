@@ -3,8 +3,6 @@ import Navbar from '@/components/Navbar';
 import MobileTabBar from '@/components/MobileTabBar';
 import AuditTable from '@/components/AuditTable';
 import RecordStatusControl from './RecordStatusControl';
-import DeleteRecordButton from './DeleteRecordButton';
-import RecordImages from './RecordImages';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
@@ -35,19 +33,44 @@ export default async function RecordDetailPage({ params }: { params: { id: strin
               {record.centre} · {new Date(record.eventDate).toLocaleDateString('en-GB', { dateStyle: 'long' })}
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            {session.role === 'ADMIN' && <RecordStatusControl recordId={record.id} status={record.status} />}
-            {session.role === 'ADMIN' && <DeleteRecordButton recordId={record.id} programmeName={record.programmeName} />}
-          </div>
+          {session.role === 'ADMIN' && <RecordStatusControl recordId={record.id} status={record.status} />}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <section className="card overflow-hidden">
-            <RecordImages
-              recordId={record.id}
-              images={record.images.map((img) => ({ id: img.id, driveViewLink: img.driveViewLink }))}
-              canDelete={session.role === 'ADMIN'}
-            />
+            {record.images.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2 p-3 stagger">
+                {record.images.map((img, i) =>
+                  img.driveViewLink ? (
+                    <a
+                      key={img.id}
+                      href={img.driveViewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex aspect-square items-center justify-center rounded-xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black/5 text-center text-xs transition-transform duration-150 hover:scale-[1.03] dark:bg-white/5"
+                    >
+                      Page {i + 1}
+                      <br />
+                      Open in Drive ↗
+                    </a>
+                  ) : (
+                    <div
+                      key={img.id}
+                      className="flex aspect-square items-center justify-center rounded-xl border border-bmmu-black/10 dark:border-bmmu-cream/10 bg-black/5 text-center text-xs text-bmmu-black/50 dark:bg-white/5 dark:text-bmmu-cream/50"
+                    >
+                      Page {i + 1}
+                      <br />
+                      Backing up…
+                    </div>
+                  )
+                )}
+              </div>
+            ) : (
+              <div className="p-5 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
+                This record's images have not finished backing up to Google Drive yet. They're still safe — check the
+                activity log below, or ask your admin to confirm the Drive connection.
+              </div>
+            )}
           </section>
 
           <section className="card space-y-3 p-5">

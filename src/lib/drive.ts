@@ -54,24 +54,6 @@ async function findOrCreateFolder(drive: ReturnType<typeof google.drive>, name: 
   return created.data.id;
 }
 
-/**
- * Permanently deletes a single file from Google Drive. Used when a staff
- * member removes an image or an admin deletes a whole record - keeps the
- * Drive folder in sync with the archive instead of accumulating orphaned
- * files. Safe to call even if the file was already removed manually.
- */
-export async function deleteDriveFile(fileId: string) {
-  const auth = getOAuthClient();
-  const drive = google.drive({ version: 'v3', auth });
-  try {
-    await drive.files.delete({ fileId });
-  } catch (err: any) {
-    // Already gone from Drive (e.g. removed manually) - not a real failure.
-    if (err?.code === 404 || err?.response?.status === 404) return;
-    throw err;
-  }
-}
-
 export async function uploadAttendanceImages({
   files,
   centre,

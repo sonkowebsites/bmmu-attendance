@@ -9,13 +9,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // Soft-delete: keeps past records' activityType field intact and lets it
-  // be re-added later without losing history.
   const activityType = await prisma.activityType.update({ where: { id: params.id }, data: { active: false } });
 
   await logAudit({
     action: 'ACTIVITY_TYPE_REMOVED',
-    entityType: 'ActivityType',
+    entityType: 'User',
     entityId: activityType.id,
     userId: session.userId,
     details: `Removed activity type "${activityType.name}" from the active list`,

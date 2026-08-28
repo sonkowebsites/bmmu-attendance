@@ -20,17 +20,6 @@ export default function UserRow({ user }: { user: U }) {
     setLoading(false);
   }
 
-  async function editName() {
-    const newName = window.prompt(`Full name for "${user.username}":`, user.name);
-    if (newName === null) return; // cancelled
-    const trimmed = newName.trim();
-    if (trimmed.length < 2) {
-      window.alert('Please enter a name with at least 2 characters.');
-      return;
-    }
-    await patch({ name: trimmed });
-  }
-
   async function resetPassword() {
     const newPassword = window.prompt(`New temporary password for ${user.username} (min 8 characters):`);
     if (!newPassword) return;
@@ -60,16 +49,7 @@ export default function UserRow({ user }: { user: U }) {
 
   return (
     <tr className="border-b border-bmmu-black/5 dark:border-bmmu-cream/5">
-      <td className="px-4 py-3 font-medium">
-        <button
-          disabled={loading}
-          onClick={editName}
-          className="text-left underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-70"
-          title="Click to edit name"
-        >
-          {user.name}
-        </button>
-      </td>
+      <td className="px-4 py-3 font-medium">{user.name}</td>
       <td className="px-4 py-3">{user.username}</td>
       <td className="px-4 py-3">
         <select

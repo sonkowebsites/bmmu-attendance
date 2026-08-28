@@ -35,7 +35,7 @@ export default function NewActivityTypeForm() {
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="e.g. Youth Camp"
+        placeholder="e.g. Eid Gathering"
         required
         className="input max-w-xs"
       />

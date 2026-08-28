@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import MobileTabBar from '@/components/MobileTabBar';
-import DeleteRecordRowButton from './DeleteRecordRowButton';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
@@ -55,7 +54,6 @@ export default async function RecordsPage({ searchParams }: { searchParams: { q?
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Submitted by</th>
                 <th className="px-4 py-3">Status</th>
-                {session.role === 'ADMIN' && <th className="px-4 py-3" />}
               </tr>
             </thead>
             <tbody>
@@ -73,16 +71,11 @@ export default async function RecordsPage({ searchParams }: { searchParams: { q?
                       {r.status}
                     </span>
                   </td>
-                  {session.role === 'ADMIN' && (
-                    <td className="px-4 py-3">
-                      <DeleteRecordRowButton recordId={r.id} programmeName={r.programmeName} />
-                    </td>
-                  )}
                 </tr>
               ))}
               {records.length === 0 && (
                 <tr>
-                  <td colSpan={session.role === 'ADMIN' ? 6 : 5} className="px-4 py-8 text-center text-bmmu-black/60 dark:text-bmmu-cream/60">
+                  <td colSpan={5} className="px-4 py-8 text-center text-bmmu-black/60 dark:text-bmmu-cream/60">
                     No records match yet.
                   </td>
                 </tr>

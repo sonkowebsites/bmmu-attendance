@@ -13,8 +13,7 @@ export default async function AdminActivityTypesPage() {
       <main className="mx-auto max-w-3xl px-5 py-8 animate-fade-in">
         <h1 className="mb-1 text-3xl font-bold tracking-tight">Activity types</h1>
         <p className="mb-6 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
-          These are the types of activity staff can pick from when submitting a record (e.g. Friday Prayers, Sports
-          Event).
+          These are the programme types staff can pick from when submitting an attendance record.
         </p>
 
         <section className="card mb-8 p-5">
@@ -28,9 +27,7 @@ export default async function AdminActivityTypesPage() {
               <ActivityTypeRow key={t.id} activityType={{ id: t.id, name: t.name }} />
             ))}
             {activityTypes.length === 0 && (
-              <li className="p-5 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">
-                No activity types yet — add your first one above.
-              </li>
+              <li className="p-5 text-sm text-bmmu-black/60 dark:text-bmmu-cream/60">No activity types yet — add your first one above.</li>
             )}
           </ul>
         </section>

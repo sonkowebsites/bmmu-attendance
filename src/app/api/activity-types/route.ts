@@ -33,11 +33,10 @@ export async function POST(request: Request) {
     if (existing.active) {
       return NextResponse.json({ error: 'That activity type already exists.' }, { status: 409 });
     }
-    // Re-activate a previously removed type instead of creating a duplicate.
     await prisma.activityType.update({ where: { id: existing.id }, data: { active: true } });
     await logAudit({
       action: 'ACTIVITY_TYPE_REACTIVATED',
-      entityType: 'ActivityType',
+      entityType: 'User',
       entityId: existing.id,
       userId: session.userId,
       details: `Re-added activity type "${name}"`,
@@ -50,7 +49,7 @@ export async function POST(request: Request) {
 
   await logAudit({
     action: 'ACTIVITY_TYPE_CREATED',
-    entityType: 'ActivityType',
+    entityType: 'User',
     entityId: activityType.id,
     userId: session.userId,
     details: `Added activity type "${name}"`,

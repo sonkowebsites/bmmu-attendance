@@ -1,88 +1,55 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { google } from 'googleapis';
+import { getGoogleLoginClient } from '@/lib/google-login';
 import { prisma } from '@/lib/db';
 import { setSessionCookie } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
 
-function toLogin(origin: string, error: string) {
-  return NextResponse.redirect(`${origin}/login?error=${error}`);
-}
-
-// This app does NOT let people sign up with Google - it links Google
-// sign-in to an account an administrator has already created (matched by
-// the email address saved on that account). This keeps the "accounts are
-// created by the administrator" access model intact while letting staff
-// sign in with one tap instead of typing a password.
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const origin = url.origin;
+  const redirectUri = `${origin}/api/auth/google/callback`;
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
-  const oauthError = url.searchParams.get('error');
 
-  const cookieStore = cookies();
-  const expectedState = cookieStore.get('google_oauth_state')?.value;
-  cookieStore.set('google_oauth_state', '', { path: '/', maxAge: 0 });
+  const cookieState = request.headers
+    .get('cookie')
+    ?.split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith('google_oauth_state='))
+    ?.split('=')[1];
 
-  if (oauthError) {
-    return toLogin(origin, 'google_cancelled');
+  function fail(message: string) {
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(message)}`);
   }
 
-  if (!code || !state || !expectedState || state !== expectedState) {
-    return toLogin(origin, 'google_invalid');
-  }
-
-  const clientId = process.env.GOOGLE_LOGIN_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_LOGIN_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    return toLogin(origin, 'google_not_configured');
+  if (!code) return fail('Google sign-in was cancelled or did not complete.');
+  if (!state || !cookieState || state !== cookieState) {
+    return fail('That sign-in link expired or was invalid. Please try again.');
   }
 
   try {
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: `${origin}/api/auth/google/callback`,
-        grant_type: 'authorization_code'
-      })
-    });
+    const client = getGoogleLoginClient(redirectUri);
+    const { tokens } = await client.getToken(code);
+    client.setCredentials(tokens);
 
-    if (!tokenRes.ok) {
-      console.error('Google token exchange failed', await tokenRes.text().catch(() => ''));
-      return toLogin(origin, 'google_failed');
+    const oauth2 = google.oauth2({ version: 'v2', auth: client });
+    const { data: profile } = await oauth2.userinfo.get();
+
+    if (!profile.email || !profile.verified_email) {
+      return fail('Could not confirm a verified Google email address.');
     }
 
-    const tokens = await tokenRes.json();
-
-    const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
-    });
-
-    if (!userInfoRes.ok) {
-      return toLogin(origin, 'google_failed');
-    }
-
-    const profile = await userInfoRes.json();
-    const email = typeof profile.email === 'string' ? profile.email.trim().toLowerCase() : null;
-
-    if (!email || profile.email_verified !== true) {
-      return toLogin(origin, 'google_unverified');
-    }
-
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email: profile.email } });
 
     if (!user || !user.active) {
       await logAudit({
         action: 'LOGIN_FAILED',
         entityType: 'Auth',
-        details: `Google sign-in attempted with no matching active account: ${email}`,
+        details: `Google sign-in attempted with unrecognised or inactive email: ${profile.email}`,
         request
       });
-      return toLogin(origin, 'google_no_account');
+      return fail('No active BMMU account is linked to that Google email. Ask your admin to add it to your account.');
     }
 
     await setSessionCookie({
@@ -101,9 +68,11 @@ export async function GET(request: Request) {
       request
     });
 
-    return NextResponse.redirect(`${origin}/dashboard`);
+    const res = NextResponse.redirect(`${origin}/dashboard`);
+    res.cookies.set('google_oauth_state', '', { path: '/', maxAge: 0 }); // clean up
+    return res;
   } catch (err) {
     console.error('Google sign-in failed', err);
-    return toLogin(origin, 'google_failed');
+    return fail('Something went wrong completing Google sign-in. Please try again.');
   }
 }
