@@ -96,3 +96,10 @@ export async function uploadAttendanceImages({
 
   return results;
 }
+
+/** Permanently removes a single backed-up image from Google Drive. */
+export async function deleteDriveFile(driveFileId: string) {
+  const auth = getOAuthClient();
+  const drive = google.drive({ version: 'v3', auth });
+  await drive.files.delete({ fileId: driveFileId });
+}
